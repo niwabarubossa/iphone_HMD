@@ -18,20 +18,12 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Set the view's delegate
         sceneView.delegate = self
         sceneView.session.delegate = self
-        
-        // Show statistics such as fps and timing information
-        sceneView.showsStatistics = true
-        
+        sceneView.showsStatistics = true // fpsとか表示するかどうか
 //        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
-        
-        // Create a new scene
-        let scene = SCNScene()
-        
-        // Set the scene to the view
-        sceneView.scene = scene
+        let scene = SCNScene() // Create a new scene
+        sceneView.scene = scene // Set the scene to the view
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -41,9 +33,9 @@ class ViewController: UIViewController {
         let configuration = ARWorldTrackingConfiguration()
         configuration.planeDetection = .horizontal
         configuration.isLightEstimationEnabled = true
-        
         // Run the view's session
         sceneView.session.run(configuration)
+        //これにより，以降，平面を検知すると，renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -105,6 +97,7 @@ extension ViewController: ARSCNViewDelegate {
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+        //平面を検知したら走る
         guard let planeAnchor = anchor as? ARPlaneAnchor else {
             print("Error: This anchor is not ARPlaneAnchor. [\(#function)]")
             return
@@ -125,6 +118,7 @@ extension ViewController: ARSCNViewDelegate {
     }
     
     func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
+        //updateAtTime,毎秒更新
         guard let currentFrame = sceneView.session.currentFrame else {
             print("Error: Current frame is nil. [\(#function)]")
             return
@@ -133,10 +127,9 @@ extension ViewController: ARSCNViewDelegate {
         // 表示時には90度回転する
         let ciImage = CIImage(cvPixelBuffer: currentFrame.capturedImage).oriented(.right)
         let imageFilter:CIFilter = CIFilter(name: "CIPhotoEffectProcess")!
-// モノクロフィルタにしたい場合はこちら       CIColorMonochrome
+        // モノクロフィルタにしたい場合は CIColorMonochrome
         imageFilter.setValue(ciImage, forKey: kCIInputImageKey)
-
-        // background.contentsはCGImageでセットする必要がある
+        // background.contentsはCGImageでセットする必要がある(?)
         if let filtImage = imageFilter.outputImage,
             let cgImage = context.createCGImage(filtImage, from: ciImage.extent) {
             sceneView.scene.background.contents = cgImage
